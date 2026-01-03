@@ -8,6 +8,7 @@
 [![Status](https://img.shields.io/badge/Status-Research_Preview-orange.svg)]()
 
 *A framework enabling self-evolving, context-aware AI systems designed for local deployment.*
+*This has been made using my personal assistant, code made by me and it. This is purely a testing repository.*
 
 [**Read the Research Paper**](./Reflective_Engine.pdf) · [**Report Bug**](../../issues) · [**Request Feature**](../../issues)
 
