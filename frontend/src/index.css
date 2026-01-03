@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional custom overrides */
+body {
+  @apply bg-slate-900 text-slate-100;
+}
