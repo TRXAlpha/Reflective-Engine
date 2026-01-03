@@ -8,7 +8,6 @@
 [![Status](https://img.shields.io/badge/Status-Research_Preview-orange.svg)]()
 
 *A framework enabling self-evolving, context-aware AI systems designed for local deployment.*
-*This has been made using my personal assistant, code made by me and it. This is purely a testing repository.*
 
 [**Read the Research Paper**](./Reflective_Engine.pdf) · [**Report Bug**](../../issues) · [**Request Feature**](../../issues)
 
@@ -22,12 +21,23 @@
 
 Unlike traditional static chains-of-thought, this engine implements a dynamic feedback loop where the model can "reflect" on its own outputs, modify its internal context state, and evolve its response strategy in real-time. It is designed to be lightweight enough for **local hobbyist hardware** while mimicking the metacognitive patterns found in larger frontier models.
 
+## 🧪 Meta-Experiment & Disclaimer
+
+> **Note:** This entire codebase serves as a stress test for the architecture it proposes.
+
+To verify the limits of recursive reflection, **this project was primarily coded using my own private AI model**, which utilizes the very principles described in the attached research paper. 
+
+* **Objective:** To test if a recursive-reflective model can maintain architectural coherence over a multi-file complex project.
+* **Result:** The code you see here is the output of that experiment, demonstrating the practical capability of self-correcting generation flows.
+* *While the architecture is robust, please review the code with the understanding that it is the product of an experimental autonomous coding workflow.*
+
 ## ✨ Key Features
 
 * **🧠 Recursive Reflection Loop:** The core engine allows the model to critique and refine its own outputs before final generation.
 * **📂 Local-First Design:** Optimized for local inference (compatible with llama.cpp / Ollama backends).
 * **🔄 Self-Evolving Context:** The system maintains a dynamic memory state that adapts based on user interaction depth.
-* **🔌 Dual-Interface:** * **CLI:** Direct interaction via `reflective_enginev2.py`.
+* **🔌 Dual-Interface:**
+    * **CLI:** Direct interaction via `reflective_enginev2.py`.
     * **Web UI:** A clean React-based frontend for visual interaction.
 
 ## 🏗️ Architecture
