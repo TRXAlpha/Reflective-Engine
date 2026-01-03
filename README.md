@@ -21,15 +21,28 @@
 
 Unlike traditional static chains-of-thought, this engine implements a dynamic feedback loop where the model can "reflect" on its own outputs, modify its internal context state, and evolve its response strategy in real-time. It is designed to be lightweight enough for **local hobbyist hardware** while mimicking the metacognitive patterns found in larger frontier models.
 
-## 🧪 Meta-Experiment & Disclaimer
+##🧪 Meta-Experiment (AI-Assisted Development)
 
-> **Note:** This entire codebase serves as a stress test for the architecture it proposes.
+Note: This codebase is itself part of the experiment described in the accompanying research.
 
-To verify the limits of recursive reflection, **this project was primarily coded using my own private AI model**, which utilizes the very principles described in the attached research paper. 
+I intentionally developed much of this project using my own locally hosted AI system, **Ghost**, which implements the same recursive-reflective principles proposed in the paper.
 
-* **Objective:** To test if a recursive-reflective model can maintain architectural coherence over a multi-file complex project.
-* **Result:** The code you see here is the output of that experiment, demonstrating the practical capability of self-correcting generation flows.
-* *While the architecture is robust, please review the code with the understanding that it is the product of an experimental autonomous coding workflow.*
+**Objective:**  
+To evaluate whether a recursive-reflective model can maintain architectural coherence, consistency, and intent across a multi-file, non-trivial codebase.
+
+**Result:**  
+The repository represents the outcome of that experiment. While I guided structure, intent, and review, large portions of the implementation were produced through an experimental AI-assisted workflow designed to test self-correcting generation loops.
+
+This project should therefore be read both as software *and* as empirical evidence supporting the proposed architecture.
+
+##📐 Research Transparency (Use of AI Tools)
+
+Parts of the accompanying research paper—particularly some mathematical reasoning and verification steps—were developed with the assistance of **Ghost**, a locally hosted AI system I am building as part of this research.
+
+I used the system as a reasoning aid and self-consistency checker during derivations, not as an autonomous author. All final formulations, interpretations, and conclusions were reviewed, validated, and are my responsibility.
+
+This process also served as an informal evaluation of how reflective AI systems affect reasoning quality and problem-solving performance.
+
 
 ## ✨ Key Features
 
