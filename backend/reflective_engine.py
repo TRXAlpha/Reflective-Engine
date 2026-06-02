@@ -13,7 +13,6 @@ Design goals:
 from __future__ import annotations
 import os
 import json
-import time
 import requests
 import difflib
 import traceback
@@ -157,6 +156,13 @@ def query_ollama_stream(prompt: str, system: Optional[str] = None) -> Generator[
         if isinstance(obj, str):
             return obj
         if isinstance(obj, dict):
+            # Ollama streams metadata-only completion records at the end. If a
+            # textual response key is present but empty, there is no token to
+            # yield; do not fall through and accidentally emit fields like
+            # {"model": "gemma3:4b"} as answer text.
+            if "response" in obj:
+                response = obj.get("response")
+                return response if isinstance(response, str) and response else None
             for k in ("response", "text", "content", "message", "output", "result"):
                 v = obj.get(k)
                 if isinstance(v, str) and v.strip():
@@ -180,10 +186,6 @@ def query_ollama_stream(prompt: str, system: Optional[str] = None) -> Generator[
                         for k4 in ("content", "text", "response"):
                             if k4 in ch and isinstance(ch[k4], str):
                                 return ch[k4]
-            # fallback: any non-empty string value
-            for v in obj.values():
-                if isinstance(v, str) and v.strip():
-                    return v
         return None
 
     try:
@@ -201,8 +203,6 @@ def query_ollama_stream(prompt: str, system: Optional[str] = None) -> Generator[
                     line = line.strip()
                     if not line:
                         continue
-                    # debug print for developer (keeps a trace in logs)
-                    print("[OLLAMA RAW LINE]", line)
                     parsed = None
                     try:
                         parsed = json.loads(line)
@@ -211,8 +211,10 @@ def query_ollama_stream(prompt: str, system: Optional[str] = None) -> Generator[
                     piece = None
                     if parsed is not None:
                         piece = extract_text_from_json(parsed)
-                    if piece is None:
+                    if piece is None and parsed is None:
                         piece = line
+                    if piece is None:
+                        continue
                     if isinstance(piece, str) and len(piece) <= 4:
                         token_acc.append(piece)
                         continue
@@ -336,10 +338,6 @@ def reflective_thinking_loop(user_prompt: str, max_loops: int = 5, echo_stream: 
     # Decide loops
     loops = max(1, min(estimate_loops(user_prompt, max_loops), max_loops, MAX_HARD_LOOPS))
 
-    # --- Initial answer (streamed if possible) ---
-# ---------- inside reflective_thinking_loop (replace the init_prompt and loop logic) ----------
-
-# Build a clearer, self-aware initial prompt (do not present model as purely a reviewer)
     init_prompt = (
         "You are a helpful assistant. Answer the user's request concisely and directly. "
         "If you consider the answer complete, append the convergence token "
@@ -347,26 +345,22 @@ def reflective_thinking_loop(user_prompt: str, max_loops: int = 5, echo_stream: 
         f"User prompt: {user_prompt}\n\nRelevant memory:\n{mem_summary}\n"
     )
 
-    # Send initial answer (streamed)
+    current_answer_parts: List[str] = []
     for chunk in query_ollama_stream(init_prompt):
+        current_answer_parts.append(chunk)
         if echo_stream:
             yield chunk
-
-    # If echo_stream is False collect a one-shot
-    current_answer = ""
-    if not echo_stream:
-        current_answer = query_ollama_once(init_prompt)
+    current_answer = "".join(current_answer_parts)
 
     answers = [current_answer]
     scores = []
 
-    # Reflection loops: skip the "review" step on the first iteration
     for i in range(1, loops + 1):
-        # Score current answer (best-effort)
+        yield f"\n[INFO] Reflection loop {i}/{loops}\n"
         score = score_answer(user_prompt, current_answer)
         scores.append(score)
+        yield f"[SCORE] iteration {i} score = {score}\n"
 
-        # Save concise memory record with a short reasoning snippet
         try:
             reasoning_prompt = f"Summarize in one short sentence the key reasoning steps that supported your previous answer:\n{current_answer}"
             reasoning = _truncate(query_ollama_once(reasoning_prompt), MAX_REASONING_SNIPPET)
@@ -381,8 +375,8 @@ def reflective_thinking_loop(user_prompt: str, max_loops: int = 5, echo_stream: 
             "score": score
         })
 
-        # Early stopping checks
         if CONVERGENCE_TOKEN in current_answer:
+            current_answer = current_answer.replace(CONVERGENCE_TOKEN, "").strip()
             yield "[INFO] Convergence token detected; stopping.\n"
             break
         if len(answers) >= REPEAT_COUNT_TO_STOP:
@@ -394,33 +388,37 @@ def reflective_thinking_loop(user_prompt: str, max_loops: int = 5, echo_stream: 
             yield "[INFO] Score stabilized; stopping.\n"
             break
 
-        # ONLY run the review/improve cycle starting from iteration 2 (i>1).
-        if i > 1:
-            review_prompt = (
-                f"Review this attempt and list concise, actionable improvements (1-3 bullets):\n{current_answer}\n"
-                f"User prompt: {user_prompt}\n"
-                f"After improvements, provide a new improved answer. Append {CONVERGENCE_TOKEN} if it is complete."
-            )
+        review_prompt = (
+            "Review the current answer for correctness, completeness, and clarity. "
+            "List 1-3 concrete improvements. Do not answer the user directly.\n\n"
+            f"User prompt: {user_prompt}\n\nCurrent answer:\n{current_answer}"
+        )
+        review_text = "".join(query_ollama_stream(review_prompt))
+        if echo_stream:
+            yield "\n[REVIEW]\n"
+            yield review_text
+            yield "\n"
 
-            # stream the review (optional)
-            for chunk in query_ollama_stream(review_prompt):
-                if echo_stream:
-                    yield chunk
+        improve_prompt = (
+            "Rewrite the answer using the review. Return only the improved user-facing answer. "
+            f"Append {CONVERGENCE_TOKEN} on its own line if the answer is complete.\n\n"
+            f"User prompt: {user_prompt}\n\nCurrent answer:\n{current_answer}\n\nReview:\n{review_text}"
+        )
+        improved_parts: List[str] = []
+        for chunk in query_ollama_stream(improve_prompt):
+            improved_parts.append(chunk)
+            if echo_stream:
+                yield chunk
+        improved = "".join(improved_parts).strip()
+        if improved:
+            current_answer = improved
+            answers.append(current_answer)
 
-            # Ask for a single improved answer (non-stream)
-            improve_prompt = (
-                f"Produce the improved final answer based on the review above.\n"
-                "Keep it concise. Append the convergence token at the end if you think it's complete.\n"
-            )
-            improved = query_ollama_once(improve_prompt)
-            if improved and improved.strip():
-                current_answer = improved
-                answers.append(current_answer)
-            # else: keep current answer and proceed to next loop (if any)
-        else:
-            # On i==1 we *do not* run the review/improve cycle; we let the model produce a normal improved answer
-            # (this avoids immediately making it only act as a reviewer)
-            continue
+    final_answer = current_answer.replace(CONVERGENCE_TOKEN, "").strip()
+    if final_answer:
+        yield "\n[FINAL]\n"
+        yield final_answer
+        yield "\n"
 
 
 # wrapper used by server.py

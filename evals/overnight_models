@@ -1,0 +1,24 @@
+#!/bin/bash
+# Script to run overnight model evaluations
+
+echo "Starting overnight model evaluation..."
+
+# Get the directory where this script is located.
+# This helps in referencing other files (like evaluate_model.py) relatively.
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+OUTPUT_DIR="$SCRIPT_DIR/output"
+
+# Create the output directory if it doesn't exist.
+# The '-p' flag ensures it doesn't throw an error if the directory already exists.
+mkdir -p "$OUTPUT_DIR"
+
+# Simulate running some evaluations.
+# We're assuming 'evaluate_model.py' is accessible and in the current environment or PATH.
+# If 'evaluate_model.py' is in the same directory as this script, we can reference it using $SCRIPT_DIR.
+echo "Running evaluation for model 'foo'..."
+python "$SCRIPT_DIR/evaluate_model.py" --model foo --config prod
+
+echo "Running evaluation for model 'bar'..."
+python "$SCRIPT_DIR/evaluate_model.py" --model bar --config staging
+
+echo "Overnight evaluation complete."

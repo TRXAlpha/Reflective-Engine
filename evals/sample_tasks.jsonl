@@ -1,0 +1,3 @@
+{"id":"arithmetic-001","category":"arithmetic","prompt":"What is 17 + 25? Answer with only the number.","expected":"42","grader":"exact"}
+{"id":"arithmetic-002","category":"arithmetic","prompt":"If a box has 6 rows of 7 screws, how many screws are there? Answer with only the number.","expected":"42","grader":"exact"}
+{"id":"logic-001","category":"logic","prompt":"All bloops are razzies. All razzies are lazzies. Are all bloops definitely lazzies? Answer yes or no.","expected":"yes","grader":"yes_no"}

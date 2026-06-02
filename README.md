@@ -9,7 +9,7 @@
 
 *A framework enabling self-evolving, context-aware AI systems designed for local deployment.*
 
-[**Read the Research Paper**](./Reflective_Engine.pdf) · [**Report Bug**](../../issues) · [**Request Feature**](../../issues)
+[**Read the Research Paper**](./Reflective_Engine_research_paper.pdf) · [**Evidence Review**](./Reflective_Engine_corrected.pdf) · [**Report Bug**](../../issues) · [**Request Feature**](../../issues)
 
 </div>
 
@@ -95,7 +95,7 @@ The project is structured into three main components:
 1.  **Start the Backend**
     ```bash
     cd backend
-    python app.py
+    python server.py
     ```
 
 2.  **Start the Frontend**
@@ -108,11 +108,12 @@ The project is structured into three main components:
 
 ## 📄 The Research
 
-This repository accompanies the paper **"Reflective Engine: Architectures for Recursive Self-Correction."**
+This repository accompanies the paper **"Reflective Engine: A Local Inference-Time Framework for Iterative Self-Evaluation in Language Model Applications."**
 
-> **Abstract:** *Current LLM architectures suffer from hallucination propagation in long-context windows. This paper proposes a recursive architecture where...*
+The current paper presents the project as a research-preview artifact. It documents the implemented reflective loop and explicitly avoids unsupported benchmark claims.
 
-👉 **[Download full PDF](./Reflective_Engine.pdf)**
+👉 **[Download research paper](./Reflective_Engine_research_paper.pdf)**  
+👉 **[Download evidence review](./Reflective_Engine_corrected.pdf)**
 
 ## 🗺️ Roadmap
 
